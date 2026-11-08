@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   quality:
-    name: Code Quality and Tests
+    name: Code Quality, Security and Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -32,6 +32,27 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # Security analysis: report all severities
+      - name: Trivy Security Report
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          trivy-config: trivy.yaml
+          format: table
+          exit-code: "0"
+
+      # Security gate: fail on HIGH or CRITICAL findings
+      - name: Trivy Security Gate
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          trivy-config: trivy.yaml
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          skip-setup-trivy: true
 
       - name: Run ESLint
         run: npm run lint

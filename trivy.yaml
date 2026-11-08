@@ -1,0 +1,8 @@
+scan:
+  scanners:
+    - vuln
+    - secret
+    - misconfig
+
+pkg:
+  include-dev-deps: true
