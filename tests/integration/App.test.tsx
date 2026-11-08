@@ -101,4 +101,58 @@ describe("App integration tests", () => {
       screen.queryByText("Set up development environment"),
     ).not.toBeInTheDocument();
   });
+
+  it("falls back to initial tasks when localStorage contains invalid data", () => {
+    localStorage.setItem("taskflow-tasks", "{invalid json");
+
+    render(<App />);
+
+    expect(
+      screen.getByText("Set up development environment"),
+    ).toBeInTheDocument();
+  });
+
+  it("filters tasks using the sidebar buttons", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /pending/i }));
+
+    expect(
+      screen.getByText("Configure application monitoring"),
+    ).toBeInTheDocument();
+
+    expect(screen.queryByText("Build CI/CD pipeline")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /in progress/i }));
+
+    expect(screen.getByText("Build CI/CD pipeline")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /completed/i }));
+
+    expect(
+      screen.getByText("Set up development environment"),
+    ).toBeInTheDocument();
+  });
+
+  it("edits an existing task", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Edit task" })[0]);
+
+    const titleInput = screen.getByPlaceholderText("What needs to be done?");
+
+    fireEvent.change(titleInput, {
+      target: { value: "Updated development environment" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    expect(
+      screen.getByText("Updated development environment"),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.queryByText("Set up development environment"),
+    ).not.toBeInTheDocument();
+  });
 });

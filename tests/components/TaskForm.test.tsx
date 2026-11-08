@@ -112,4 +112,27 @@ describe("TaskForm", () => {
 
     expect(onCancel).toHaveBeenCalledOnce();
   });
+
+  it("updates the due date when the user changes it", () => {
+    const onSave = vi.fn();
+
+    render(<TaskForm onSave={onSave} onCancel={vi.fn()} />);
+
+    fireEvent.change(screen.getByLabelText("Due date"), {
+      target: { value: "2026-11-20" },
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("What needs to be done?"), {
+      target: { value: "Deploy application" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Create task" }));
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Deploy application",
+        dueDate: "2026-11-20",
+      }),
+    );
+  });
 });
