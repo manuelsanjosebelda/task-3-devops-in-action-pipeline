@@ -1,0 +1,12 @@
+services:
+  taskflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: taskflow:1.0
+
+    ports:
+      - "8080:80"
+
+    restart: unless-stopped
