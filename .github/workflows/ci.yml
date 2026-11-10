@@ -1,39 +1,53 @@
+# Name displayed in the GitHub Actions tab
 name: TaskFlow CI
 
+# Define when the workflow should run
 on:
+  # Run the pipeline whenever code is pushed to these branches
   push:
     branches:
       - feature/**
       - develop
       - main
 
+  # Run the pipeline when a pull request targets these branches
   pull_request:
     branches:
       - develop
       - main
 
+# Define the permissions granted to the workflow
 permissions:
   contents: read
 
+# Define the jobs executed by this workflow
 jobs:
   quality:
+    # Name displayed for this job in GitHub Actions
     name: Code Quality, Security and Tests
+
+    # Use a GitHub-hosted Ubuntu runner
     runs-on: ubuntu-latest
 
+    # Define the steps executed sequentially
     steps:
+      # Download the repository source code
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Install the required Node.js version and enable npm caching
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
+      # Install dependencies using the lockfile
       - name: Install dependencies
         run: npm ci
 
-      # Security analysis: report all severities
+      # Scan the repository for vulnerabilities, secrets and misconfigurations
+      # This report does not fail the pipeline
       - name: Trivy Security Report
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -43,7 +57,7 @@ jobs:
           format: table
           exit-code: "0"
 
-      # Security gate: fail on HIGH or CRITICAL findings
+      # Security gate: fail if HIGH or CRITICAL findings are detected
       - name: Trivy Security Gate
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -54,11 +68,40 @@ jobs:
           exit-code: "1"
           skip-setup-trivy: true
 
+      # Analyse the source code and detect linting problems
       - name: Run ESLint
         run: npm run lint
 
+      # Execute automated tests and generate a coverage report
       - name: Run tests with coverage
         run: npm run test:coverage
 
+      # Compile TypeScript and generate the production build
       - name: Build application
         run: npm run build
+
+      # Build the Docker image from the project Dockerfile
+      - name: Build Docker image
+        run: docker build -t taskflow:1.0 .
+
+      # Scan the Docker image and report all detected vulnerabilities
+      # This report does not fail the pipeline
+      - name: Trivy Docker Image Report
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: taskflow:1.0
+          trivy-config: trivy.yaml
+          format: table
+          exit-code: "0"
+
+      # Security gate: fail if the Docker image contains HIGH or CRITICAL vulnerabilities
+      - name: Trivy Docker Image Security Gate
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: taskflow:1.0
+          trivy-config: trivy.yaml
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          skip-setup-trivy: true
