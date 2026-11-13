@@ -18,6 +18,11 @@ spec:
         app: taskflow
 
     spec:
+      # Apply security settings to the Pod
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+
       containers:
         - name: taskflow
           image: taskflow:1.0
@@ -25,6 +30,25 @@ spec:
 
           ports:
             - containerPort: 8080
+
+          # Container security settings
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 101
+            capabilities:
+              drop:
+                - ALL
+
+          # Writable directories required by Nginx
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+            - name: nginx-run
+              mountPath: /var/run
 
           # Check whether the application is healthy
           livenessProbe:
@@ -41,3 +65,12 @@ spec:
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
+
+      # Temporary writable storage
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
+          emptyDir: {}
