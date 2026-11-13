@@ -1,0 +1,43 @@
+# TaskFlow Kubernetes Deployment
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: taskflow
+
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: taskflow
+
+  template:
+    metadata:
+      labels:
+        app: taskflow
+
+    spec:
+      containers:
+        - name: taskflow
+          image: taskflow:1.0
+          imagePullPolicy: Never
+
+          ports:
+            - containerPort: 8080
+
+          # Check whether the application is healthy
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          # Check whether the application is ready to receive traffic
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
