@@ -5,4 +5,4 @@ scan:
     - misconfig
 
 pkg:
-  include-dev-deps: true
+  include-dev-deps: false
