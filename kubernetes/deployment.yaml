@@ -4,6 +4,7 @@ kind: Deployment
 
 metadata:
   name: taskflow
+  namespace: default
 
 spec:
   replicas: 3

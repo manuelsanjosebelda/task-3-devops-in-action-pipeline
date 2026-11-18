@@ -40,3 +40,9 @@ Thumbs.db
 
 # Test coverage reports
 coverage/
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
