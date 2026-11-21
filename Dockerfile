@@ -11,17 +11,14 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
+FROM nginx/nginx-unprivileged:1.30.7-alpine3.24
 
-# Stage 2: Serve the application without root privileges
-FROM nginxinc/nginx-unprivileged:stable-alpine
-
-# Temporarily switch to root to update system packages
 USER root
 
 RUN apk upgrade --no-cache
 
-# Return to the unprivileged nginx user
 USER 101
+
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 
