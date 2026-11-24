@@ -446,3 +446,7 @@ Potential improvements include:
 - Deploying the infrastructure to a cloud Kubernetes service.
 
 These improvements would make the pipeline more suitable for a production environment.
+
+## CI Pipeline Demo
+
+This commit demonstrates the automated GitHub Actions workflow running on a feature branch.
